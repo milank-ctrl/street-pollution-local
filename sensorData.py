@@ -4,7 +4,7 @@ from datetime import datetime
 import time
 from pymongo import MongoClient
 from urllib.parse import quote_plus
-
+import json
 
 class SDS011(object):
     
@@ -176,8 +176,15 @@ def getUnix():
     now_ns = int(time.time_ns() / 1000)
     return now_ns
 
-user = quote_plus('admin')
-pw = quote_plus('SUPERSECRETPASSWORD')
+json_path = "/home/pi/Desktop/python/pollution/aqi/sensor/keys.json"
+with open(json_path, "r") as f: 
+    auth_keys = json.load(f)
+
+print()
+
+user = quote_plus(auth_keys["mongo_user"])
+pw = quote_plus(auth_keys["mongo_pw"])
+
 uri = 'mongodb://%s:%s@127.0.0.1:27017'%(user, pw)
 client = MongoClient(uri)
 db = client.aqi
@@ -185,20 +192,19 @@ db = client.aqi
 port = "/dev/ttyUSB0"
 sensor = SDS011(port)
 
+
 while True:
+  
     pm25, pm10 = sensor.query()
     currentDateTime = getTime()
     unix_ts = getUnix()
-    
-    doc = {"unix": unix_ts, "sampleTime": currentDateTime, "pm10": pm10, "pm25": pm25, "test": 1, "unit": "ug/m3"}
+
+    doc = {"unix": unix_ts, "sampleTime": currentDateTime, "pm10": pm10, "pm25": pm25, "test": 0, "unit": "ug/m3"}
     print(doc)
     mdb = db.sensor.insert_one(doc)
     print(mdb)
     #go to sleep
     time.sleep(5)
-
-
-
 
 
 
