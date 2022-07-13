@@ -178,6 +178,7 @@ def getUnix():
 
 
 json_path = "/home/pi/Desktop/python/pollution/aqi/sensor/keys.json"
+
 with open(json_path, "r") as f: 
     auth_keys = json.load(f)
 
