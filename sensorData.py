@@ -174,7 +174,8 @@ def getTime():
 
 def getUnix():
     now_ns = int(time.time_ns() / 1000)
-    return now_ns
+    return int(str(now_ns)[:10]) 
+
 
 json_path = "/home/pi/Desktop/python/pollution/aqi/sensor/keys.json"
 with open(json_path, "r") as f: 
