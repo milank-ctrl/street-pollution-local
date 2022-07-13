@@ -174,15 +174,22 @@ def getTime():
 
 def getUnix():
     now_ns = int(time.time_ns() / 1000)
-    return int(str(now_ns)[:10]) 
+    return int(str(now_ns)[:10])
+
+def write_json(new_data, filename):
+    with open(filename, 'r+') as f:
+        file_data = json.load(f)
+        file_data["data"].append(new_data)
+        f.seek(0)
+        json.dump(file_data, f, indent=4)
 
 
 json_path = "/home/pi/Desktop/python/pollution/aqi/sensor/keys.json"
+sensorDataPath = '/home/pi/Desktop/python/pollution/aqi/sensor/data/sensorData.json'
 
 with open(json_path, "r") as f: 
     auth_keys = json.load(f)
 
-print()
 
 user = quote_plus(auth_keys["mongo_user"])
 pw = quote_plus(auth_keys["mongo_pw"])
@@ -196,15 +203,25 @@ sensor = SDS011(port)
 
 
 while True:
-  
+    
+    print("Measuring pm10 and pm25 values...")
     pm25, pm10 = sensor.query()
     currentDateTime = getTime()
     unix_ts = getUnix()
 
     doc = {"unix": unix_ts, "sampleTime": currentDateTime, "pm10": pm10, "pm25": pm25, "test": 0, "unit": "ug/m3"}
-    print(doc)
+    print("Row created: {}".format(doc))
+    
+    
+    write_json(doc, sensorDataPath)
+    print("Saving the file locally...")
+
     mdb = db.sensor.insert_one(doc)
-    print(mdb)
+    print("Adding to mongodb... {}".format(mdb))
+
+    print("Sleep 5 sec...")
+    print("---")
+    
     #go to sleep
     time.sleep(5)
 
